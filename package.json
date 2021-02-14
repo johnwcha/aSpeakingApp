@@ -1,0 +1,28 @@
+{
+  "name": "USCChinese",
+  "version": "1.0.0",
+  "description": "learning to speak a language",
+  "author": "John Chang",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate"
+  },
+  "dependencies": {
+    "@nuxtjs/firebase": "^6.0.1",
+    "cookieparser": "^0.1.0",
+    "firebase": "^7.15.1",
+    "hanzi-tools": "^1.2.25",
+    "js-cookie": "^2.2.1",
+    "jwt-decode": "^2.2.0",
+    "nuxt": "^2.0.0",
+    "opencc": "^1.1.1",
+    "opencc-js": "^0.2.1",
+    "zh_cn_zh_tw": "^1.0.7"
+  },
+  "devDependencies": {
+    "@nuxtjs/vuetify": "^1.0.0"
+  }
+}

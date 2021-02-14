@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html class="no-js consumer" lang="en">
+  <head>
+    <script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script> 
+    <meta charset="utf-8">
+    <meta content="initial-scale=1, minimum-scale=1, width=device-width" name="viewport">
+    <meta content=
+    "Google Chrome is a browser that combines a minimal design with sophisticated technology to make the web faster, safer, and easier."
+    name="description">
+    <title>
+      USC EALC Chinese
+    </title>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
+  <!-- Google Fonts Roboto -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <!--
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    -->
+    
+    <link href="https://plus.google.com/100585555255542998765" rel="publisher">
+    <link href="//www.google.com/images/icons/product/chrome-32.png" rel="icon" type="image/ico">
+    <link href="//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&amp;subset=latin" rel=
+    "stylesheet" nonce="RTWpDYsVhAGW2vfVqynwuA">
+
+      <!-- Material Design Bootstrap -->
+  <link rel="stylesheet" href="css/mdb.min.css">
+  <!-- Your custom styles (optional) -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <link href="./css/toast.css" rel="stylesheet"/>
+
+  </head>
+<body>
+
+    
+<!-- Start your project here-->  
+
+<div class="container" id="S-vocab">
+    
+    <div class="row" style="height: 10px;"></div>
+    <div class="alert alert-primary" role="alert" id="part0">
+       <strong>Instructions: </strong> 1) Speaking - vocabulary.
+    </div>  
+
+<!-- 
+********* 1 Table List of units -->
+<div class="row L-vocab-1" id="part1">
+    <table class="table table-hover" id="L-vocab-table">
+        <thead >
+          <tr>
+          <th style="font-weight: bold;">#</th>
+          <th style="font-weight: bold;">Lesson / Unit</th>
+          <th style="font-weight: bold;"> Actions </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr v-for="(item, index) in items"> <!--   -->
+            <td> {{ index+1 }} </td>
+            <td> {{ item.unit }} </td>
+            <td>
+                <a  href="#" v-on:click="review(index, item)"> <i class="fas fa-file-alt"></i> Review </a> <!---->
+                <span class="ml-4"></span>
+                <a  href="#" v-on:click="quiz(index, item)"> <i class="far fa-edit"></i> Quiz </a>
+                <span class="ml-4"></span>
+                <a  href="#" v-on:click="perform(index, item)"> <i class="far fa-chart-bar"></i> Performance </a>
+            </td>
+          </tr>                  
+        </tbody>
+      </table>
+</div>
+
+<!-- 
+********* 2 Review -->
+<div class="row L-vocab-2" id="part2" style="display: none;">
+<div class="container text-center">
+    <div class="row" style="display: block;"> <!-- Question-->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb red lighten-4">
+              <li class="breadcrumb-item"><a class="black-text" href="#" onclick="part2back()"> Back </a><i
+                  class="fas fa-angle-double-left mx-2" aria-hidden="true"></i></li>
+            </ol>
+        </nav>
+
+        <div class="text-center">
+            <button style="width: 400px; height: 200px;" type="button" class="btn btn-outline-secondary waves-effect"> 
+                <p style="font-size: 72px;" id="charBox" style="display: none;"> {{ curReviewChar }} </p> </button>
+        </div>
+    </div>
+    <div class="mt-3"></div> <!-- spacer -->
+    <div class="row" style="display: inline-flex;"> <!-- Progress -->
+        <!-- a href="#" onclick="reviewNav('prev')"><i class="far fa-arrow-alt-circle-left fa-3x"></i></a   -->
+        <span class="mr-5"></span><span class="align-middle pt-3"><p class="h3 purple-text"> {{curReviewPos+1}} of {{reviewList.length}} </p></span><span class="ml-5"></span>
+        <!-- a href="#" onclick="reviewNav('next')"><i class="far fa-arrow-alt-circle-right fa-3x mr-5"></i></a  -->
+        <button type="button" class="btn btn-lg btn-primary waves-effect" onclick="reviewStart()" id="reviewStart"> Start </button>
+        
+    </div>
+    <div class="mt-3"></div> <!-- spacer -->
+    <div class="row" style="display: block;" > <!-- Choices -->
+        <div class="row h3 green-text" style="display: block;" id="reviewTime"> It was {{ reviewCorrect }} of {{ reviewList.length }} correct in <span id="stopWatch"> 0 </span> seconds. </div>
+        <button v-if="!finished" type="button" class="btn btn-lg btn-outline-success waves-effect" 
+        v-on:click="reviewCheck(item)" v-for="item in randomEngList"> {{item}} </button>
+    </div>
+</div>
+</div>
+
+
+<!--
+********* 3 Quiz -->
+<div class="row L-vocab-3" id="part3" style="display: none;">
+<div class="container text-center">
+    <nav aria-label="breadcrumb"> <!-- Back button -->
+        <ol class="breadcrumb red lighten-4">
+          <li class="breadcrumb-item"><a class="black-text" href="#" onclick="part3back()"> Back </a><i
+              class="fas fa-angle-double-left mx-2" aria-hidden="true"></i></li>
+        </ol>
+    </nav>
+    
+    <div class="row" style="display: block;"> <!-- English -->
+        <button type="button" class="btn btn-lg btn-outline-success waves-effect" style="min-height: 60px; min-width: 200px;"> 
+            <span id="quiz_eng"> {{ curQuizVocab.eng }} </span></button>
+    </div>
+    <div class="mt-3"></div> <!-- spacer -->
+
+    <div class="row" style="display: block;"> <!--Hanzi-->
+        <div class="text-center">
+            <button style="width: 600px; height: 300px;" type="button" class="btn btn-outline-secondary waves-effect"> 
+                 <span class="final primary-text" id="final_span" style="font-size: 72px;"> 生詞小考</span> 
+                 <span class="interim green-text" id="interim_span" style="font-size: 72px;"></span>  </button>
+        </div>
+    </div>
+    <div class="mt-3"></div> <!-- spacer -->
+
+    <div class="row" style="display: inline-flex;"> <!-- Progress -->
+        <!-- a href="#"><i class="far fa-arrow-alt-circle-left fa-3x"></i></a  -->
+        <button type="button" class="btn btn-primary waves-effect" onClick="startQuizBtn()" id="startBtn"> START </button>
+        <span id="quiz_nav_div" style="display: flex;">
+            <span class="mr-5"></span><span class="align-middle pt-3"><p class="h3 purple-text"> 
+                {{ curQuizPos+1 }} of {{ quizList.length }} </p></span><span class="ml-5"></span>
+            <a href="#" onclick="quizNav('next')"><i class="far fa-arrow-alt-circle-right fa-3x"></i></a>
+            <span class="ml-5"></span> 
+                <button id="start_button" onclick="startButton(event)"><img alt="Start" id="start_img" src="./img/mic.gif"></button>
+            <span class="ml-5" id="green_check" style="opacity: 0;"><i class="fas fa-check green-text fa-3x"></i></span>
+    </div>
+    <div class="row pt-5" style="display: block;">
+        <div class="row h3 green-text" style="display: block;" id="quizTime"> 
+            It was {{ quizCorrect }} of {{ quizList.length }} correct in <span id="quizWatch"> 0 </span> seconds. 
+        </div>
+    </div>
+
+
+</div>        
+</div>
+ 
+
+<!-- 
+********* 4 Stats -->
+<div class="row L-vocab-4" id="part4" style="display: none;">
+    <p id="unit_name_avg"> </p>
+    <canvas id="myChart" width="400" height="200"></canvas>
+    <p id="unit_name_quiz"> </p>
+    <canvas id="myQuizChart" width="400" height="200"></canvas>
+</div>
+
+
+
+    
+</div>
+<!-- End your project here-->
+
+
+ <script src="./js/toastr.js"></script>
+ <script src="./js/web_speech_api_quiz.js"></script> 
+ 
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+  <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-app.js"></script>
+  <!-- TODO: Add SDKs for Firebase products that you want to use
+       https://firebase.google.com/docs/web/setup#available-libraries -->
+       <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-firestore.js"></script>
+       <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-auth.js"></script>
+
+  <!-- TODO: Add SDKs for Firebase products that you want to use
+       https://firebase.google.com/docs/web/setup#available-libraries -->
+  <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-firestore.js"></script>
+
+  <script src="./js/firebase_db.js"></script>
+  <!-- Vue JS -->
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <!-- Vue Chart JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+<script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
+<script src="./js/perform.js"></script>
+
+  <script>
+	firebase.auth().signInAnonymously().catch(function (error){
+				console.log(error.code)
+			})
+			firebase.auth().onAuthStateChanged(function(user){
+				if (user) {
+					console.log(user.isAnonymouse);
+				}
+			})
+
+	function speak(text){
+		//console.log('speaking ...');
+		const utterance = new SpeechSynthesisUtterance(text)
+		/*
+utterance.rate: set the speed, accepts between [0.1 - 10], defaults to 1
+utterance.pitch: set the pitch, accepts between [0 - 2], defaults to 1
+utterance.volume: sets the volume, accepts between [0 - 1], defaults to 1
+utterance.lang: set the language (values use a BCP 47 language tag, like en-US or it-IT)
+utterance.text: instead of setting it in the constructor, you can pass it as a property. Text can be maximum 32767 characters
+utterance.voice: sets the voice (more on this below)
+		*/
+		utterance.rate = 0.8;
+		utterance.pitch = 1;
+		utterance.lang = "zh-CN"; // zh-TW , zh-HK
+		speechSynthesis.speak( utterance );
+		// not working in Chrome
+		//console.log(`Voices #: ${speechSynthesis.getVoices().length}`);
+		speechSynthesis.getVoices().forEach(voice => {
+  			//console.log(voice.name, voice.lang)
+		}) // not working in Chrome
+
+		const voiceschanged = () => {
+  			//console.log(`Voices #: ${speechSynthesis.getVoices().length}`)
+  			speechSynthesis.getVoices().forEach(voice => {
+    			//console.log(voice.name, voice.lang)
+  			})
+		}
+		speechSynthesis.onvoiceschanged = voiceschanged;
+    }
+    
+    function review(){
+        $("#part0").hide();
+        $("#part1").hide();
+        $("#part2").show();
+    }
+    function quiz(){
+        $("#part0").hide();
+        $("#part1").hide();
+        $("#part3").show();
+        $("#quiz_eng").hide();
+        $("#quiz_nav_div").hide();
+        final_transcript = '';
+        $("#startBtn").show();
+        $("#final_span").html('生詞小考');
+        $("#interim_span").html('');
+        $("#green_check").fadeTo('fast', 0);
+        myVocabUnits.curQuizPos = 0;
+        $("#quizTime").hide();
+        quizResponse = [];
+    }
+    function startQuizBtn(){
+        $("#final_span").html('');
+        $("#interim_span").html('');
+        final_span.innerHTML = '';
+        myVocabUnits.curQuizVocab = 0;
+        myVocabUnits.quizCorrect = 0;
+        myVocabUnits.curQuizVocab = myVocabUnits.quizList[0];
+        console.log('first question: ', myVocabUnits.quizList[0]);
+        $("#quiz_eng").show();
+        $("#startBtn").hide();
+        $("#quiz_nav_div").show();
+        startTimer();
+    }
+    function perform(){
+        $("#part0").hide();
+        $("#part1").hide();
+        $("#part4").show();
+    }
+    function part2back(){
+        myVocabUnits.reviewList = new Array();
+        $("#part0").show();
+        $("#part1").show();
+        $("#part2").hide();
+        $("#charBox").hide();
+    }
+    function part3back(){
+        $("#part0").show();
+        $("#part1").show();
+        $("#part3").hide();
+    }
+
+    var username;
+    var course;
+    //showToast('Info', 'Ready. Start speaking.');
+    //toastr.info('Are you the 6 fingered man?', "INFO");
+    
+    function getQuizUnit(unitid){
+        db.collection('vocab_que').where('unitid', '==', unitid).get().then(function(querySnapshot){
+            myVocabUnits.quizList = new Array();
+            querySnapshot.forEach(function(doc){
+                console.log(doc.data().char, doc.data().eng);
+                myVocabUnits.quizList.push( {char:doc.data().char, eng:doc.data().eng} );
+            })
+            myVocabUnits.quizList = shuffle( myVocabUnits.quizList ); 
+        }).catch(function(error){
+            console.log(error);
+        })
+
+    }
+
+    function getUnitQue(unitid){ // init review
+        db.collection('vocab_que').where('unitid', '==', unitid).get().then(function(querySnapshot){
+            //var temp = new Array();
+            myVocabUnits.reviewList = new Array();
+            querySnapshot.forEach(function(doc){
+                //console.log(doc.data().char, doc.data().eng);
+                myVocabUnits.reviewList.push( {char:doc.data().char, eng:doc.data().eng} );
+            })
+            myVocabUnits.reviewList = shuffle( myVocabUnits.reviewList ); 
+            // shuffle characters
+            var randomEng = [];
+            myVocabUnits.reviewList.forEach(function(item){
+                randomEng.push(item.eng);
+            })
+            myVocabUnits.randomEngList = shuffle(randomEng);
+
+            myVocabUnits.curReviewPos = 0;
+            myVocabUnits.reviewCorrect = 0;
+            myVocabUnits.curReviewChar = myVocabUnits.reviewList[0].char;
+            myVocabUnits.curReviewEng = myVocabUnits.reviewList[0].eng;
+            //this.reviewList = temp;
+        }).catch(function(error){ toastr.error("Problems getting questions at review()", "ERROR"); console.log(error);
+        })
+    }
+    function reviewNav(move){
+        if (move==='next'){
+            if (myVocabUnits.curReviewPos==myVocabUnits.reviewList.length-1) { 
+                stopTimer();
+                myVocabUnits.finished = true;
+                $("#reviewTime").show();
+                var percent = Math.round(myVocabUnits.reviewCorrect / myVocabUnits.reviewList.length * 100 ) ;
+                //console.log($("#stopWatch").text());
+                //console.log(curReviewUnitid);
+                //console.log(window.localStorage.uscwebapp);
+                db.collection('vocab_review_stats').add( {time: firebase.firestore.FieldValue.serverTimestamp(), uid:window.localStorage.uscwebapp, unitid: curReviewUnitid, unit:curReviewUnit,
+                    percentage: percent, duration: $('#stopWatch').text() }).then(function(data){
+                        console.log('success');
+                    }).catch(function(error){ console.log(error) });
+                return; 
+            }
+            myVocabUnits.curReviewPos++;
+            //console.log(myVocabUnits.reviewList[0].char);
+            //console.log(myVocabUnits.curReviewPos);
+            speak( myVocabUnits.reviewList[myVocabUnits.curReviewPos].char );
+            myVocabUnits.curReviewChar = myVocabUnits.reviewList[myVocabUnits.curReviewPos].char;
+            myVocabUnits.curReviewEng = myVocabUnits.reviewList[myVocabUnits.curReviewPos].eng;
+        } else if (move==='prev'){
+            if (myVocabUnits.curReviewPos==0) { return; }
+            myVocabUnits.curReviewPos--;
+            speak( myVocabUnits.reviewList[myVocabUnits.curReviewPos].char );
+            myVocabUnits.curReviewChar = myVocabUnits.reviewList[myVocabUnits.curReviewPos].char;
+            myVocabUnits.curReviewEng = myVocabUnits.reviewList[myVocabUnits.curReviewPos].eng;
+        }
+    }
+    function quizNav(move){
+        if (move==='next') {
+            if (myVocabUnits.curQuizPos == myVocabUnits.quizList.length-1) {
+                return; 
+            }
+            myVocabUnits.curQuizPos++;
+            var temp = myVocabUnits.quizList[myVocabUnits.curQuizPos];
+            myVocabUnits.curQuizVocab = temp;
+            console.log(temp);
+            $("#final_span").html('');
+            $("#interim_span").html('');
+            final_transcript = '';
+            $("#green_check").fadeTo('fast', 0);
+            if (!recognizing) { recognition.start(); }
+        }
+    }
+    function isFinal(txt, conf){
+        console.log('final transcript: ', txt);
+        //console.log(myVocabUnits.curQuizVocab);
+        // compare user input against current vocab
+        var ans = myVocabUnits.curQuizVocab.char;
+        if (txt===ans) {
+            //console.log('correct');
+            quizResponse.push( {correct: 'correct', ans: ans, userInput: txt, confidence:conf} );
+            $("#green_check").fadeTo('fast', 1);
+            myVocabUnits.quizCorrect++;
+        } else if (txt.indexOf(ans)!=-1) {
+            //console.log('also correct');
+            quizResponse.push( {correct: 'also correct', ans: ans, userInput: txt, confidence:conf} );
+            $("#green_check").fadeTo('fast', 1);
+            myVocabUnits.quizCorrect++;
+        } else {
+            quizResponse.push( {correct: 'incorrect', ans: ans, userInput: txt, confidence:conf} );
+            console.log(' Incorrent ');
+        }
+        if (myVocabUnits.curQuizPos == myVocabUnits.quizList.length-1) {
+            $("#quizTime").show();
+            stopTimer() // if last question
+            writeQuizData();
+        }
+    }
+
+    function writeQuizData() {
+        console.log( window.localStorage.uscwebapp );
+        console.log( curQuizUnit );
+        console.log( curQuizUnitid );
+        var percent = Math.round(myVocabUnits.quizCorrect / myVocabUnits.quizList.length * 100 ) ;
+        console.log( percent );
+        console.log( $("#quizWatch").text() );
+        console.log( quizResponse );
+        var obj = {time: firebase.firestore.FieldValue.serverTimestamp(), uid: window.localStorage.uscwebapp, unit: curQuizUnit, unitid: curQuizUnitid, 
+            percentage: percent, duration: $("#quizWatch").text(), response: quizResponse};
+        db.collection('vocab_quiz_stats').add(obj).then(function(doc){
+            console.log('success: ', doc.id);
+        }).catch(function(error){ console.log(error); })
+    }
+
+let curReviewUnitid = '';
+let curReivewUnit = '';
+
+let curQuizUnitid = '';
+let curQuizUnit = '';
+let quizResponse = [];
+
+var myVocabUnits = new Vue({
+  el: '#S-vocab',
+  data: {
+    //parentMessage: 'Parent',
+    finished: false,
+    items: [],
+    quizList: [],
+    curQuizVocab: {},
+    curQuizPos: 0,
+    quizCorrect: 0, 
+    reviewList: [],
+    randomEngList: [],
+    curReviewVocab: {},
+    curReviewChar: '',
+    curReviewEng: '',
+    curReviewPos: 0,
+    reviewCorrect: 0,
+    duration: 0,
+    reviewStats: []
+  },
+  methods: {
+    reviewCheck: function(item){
+        //console.log(item);
+        if (item===this.curReviewEng) {
+            this.reviewCorrect++;
+            //console.log('correct');
+        } else {
+            //console.log("incorrect");
+        }
+        reviewNav('next');
+    },
+    review: function(index, item){
+        this.finished = false;
+        $("#reviewStart").show();
+        $("#charBox").hide();
+        $("#reviewTime").hide();
+        review();
+        //console.log(index, item);
+        curReviewUnit = item.unit;
+        curReviewUnitid = item.unitid;
+        getUnitQue(item.unitid);
+    },
+    quiz: function(index, item){
+        quiz();
+        curQuizUnit = item.unit;
+        curQuizUnitid = item.unitid;
+        getQuizUnit(item.unitid);
+    },
+    perform: function(index, item){
+        perform();
+        //console.log(index, item);
+        // get review stats
+        var temp = [];
+        var all_review = [];
+        db.collection('vocab_review_stats').where("unitid", "==", item.unitid).orderBy("time")
+        .get().then(function(querySnapshot){
+            console.log(querySnapshot);
+            //if (querySnapshot.empty) { return; alert('No quiz data'); }
+            querySnapshot.forEach(function(doc){
+                if ( doc.data().percentage<101 ) { 
+                    all_review.push( doc.data() );
+                    if (doc.data().uid==window.localStorage.uscwebapp) {
+                        temp.push(doc.data()); 
+                    }
+                };
+            })
+            //console.log(temp);
+            if (temp.length==0) { $("#unit_name_avg").text('No quiz data'); return; };
+            drawChart_1(temp, all_review);
+        }).catch(function(error){
+            console.log(error);
+        })
+        //<!-- Quiz Stats -->
+        var tmp = [];
+        var all_quiz = [];
+        db.collection('vocab_quiz_stats').where("unitid", "==", item.unitid).orderBy("time")
+        .get().then(function(querySnapshot){
+            //console.log(querySnapshot)
+            querySnapshot.forEach(doc => {
+                if ( doc.data().percentage<101 ) {
+                    all_quiz.push( doc.data() );
+                    if (doc.data().uid==window.localStorage.uscwebapp) {
+                        tmp.push(doc.data()); 
+                    }
+                }
+            })
+            if (tmp.length==0) { $("#unit_name_quiz").text('No quiz data'); return; }
+            drawChart_2(tmp, all_quiz);
+        }).catch(function(error){
+            console.log(error)
+        })
+    },
+    delSpeech: function(index, item){
+      this.items.splice(index, 1);
+      console.log( item.id );
+      db.collection('speaking').doc(item.id).delete()
+      .then(function(){
+          toastr.success('Speech deleted', "SUCCESS");
+      }).catch(function(error){
+        toastr.error('Problems encountered', "ERROR");
+      })
+    }
+  }
+})
+
+var myCounter;
+function startTimer(){
+    var i = 1;
+    myCounter = setInterval(function () {
+        $("#stopWatch").html(i);
+        $("#quizWatch").html(i);
+        i++;
+    }, 1000);
+}
+
+function stopTimer(){
+    clearInterval(myCounter); // stop timer
+    myCounter = null;
+}
+
+function reviewStart(){
+    $("#charBox").show();
+    $("#reviewStart").hide();
+    speak( myVocabUnits.reviewList[myVocabUnits.curReviewPos].char );
+    startTimer();
+}
+
+$( document ).ready(function() {
+  if ( db && window.localStorage.uscwebapp ) {
+      //console.log(window.localStorage.uscwebapp);
+      var temp = new Array();
+      // get user info
+      db.collection('uid').doc(window.localStorage.uscwebapp).get().then(function(querySnapshot){
+          //console.log(querySnapshot.data());
+        username = querySnapshot.data().name;
+        course = querySnapshot.data().course;
+        // get available units
+        db.collection('vocab_units').where("class", "==", querySnapshot.data().course).get().then(function(items){
+            items.forEach(function(item){
+                //console.log(item.data());
+                temp.push( {class:item.data().class, unit:item.data().unit, unitid:item.id});
+            })
+        }).catch(function(error){ console.log(error);
+        })
+      }).catch(function(error){
+        console.log(error);
+      })
+      myVocabUnits.items = temp;
+    } else {
+      //console.log(db, uscwebapp, username);
+      toastr.error('Error encountered @ speaking / sentence');
+    }
+
+    $("#lesson").change(function(){
+      //console.log('getting speech data ...')
+        // clear table data
+        //$("#tablerow tbody tr").remove();
+        $("#info_start").show();
+        $("#select_info").hide();
+        $("#div_start_").show();
+        $("#copy").show();
+        //console.log( username );
+        //console.log( $("#lesson").val() );
+
+    })
+
+});   
+
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
+  </script>
+</body>
+</html>
