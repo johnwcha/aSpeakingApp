@@ -66,10 +66,51 @@
                       <v-icon @click="deleteSpeech(item.speechid, i)"> mdi-delete </v-icon>
                       <span v-if="item.correct"> /
                       <v-icon class="green--text" > mdi-check-bold </v-icon> </span>
+                      <span> {{ dayjs.unix(item.time.seconds).format('h:mm:ss A • MMM D') }} </span>
                     </td>
                   </tr>
                 </tbody>
               </v-simple-table>
+
+                  <v-card v-if="charArray.length>0" class="mt-2">
+                      <div style="display: inline-block; width: 100px; height: 110px" v-for="(item, i) in charArray" :key="i">
+                        <v-btn class="char" outlined style="padding: 2px; min-width: 72px; min-height: 72px"> 
+                            {{item.char}} </v-btn>
+                        <div style="height:24px">
+                            <v-chip :text-color="(item.sheng>=0 ? 'black' : 'white')" v-if="item.sheng!=0"
+                                    :color="(item.sheng>=0 ? 'white' : 'red')"> 声 </v-chip>
+                            
+                            <!-- <input style="width: 64px; text-align: center;" v-model="item.pinyin" type="text"> -->
+                            <v-chip :text-color="(item.yin>=0 ? 'black' : 'white')" v-if="item.yin!=0"
+                                    :color="(item.yin>=0 ? 'white' : 'orange')"> 音 </v-chip>
+                        </div>
+                      </div>
+                    <v-simple-table>
+                      <tbody>
+                        <tr>
+                          <td> 聲調 </td>
+                          <td> <v-text-field label="score:" v-model="toneScore" />  </td>
+                          <td> <v-text-field label="weight:" suffix="%" v-model="toneWeight" />  </td>
+                          <td> <v-text-field label="subtotal:" v-model="toneSubtotal" /> </td>
+                        </tr>
+                        <tr>
+                          <td> 發音 </td>
+                          <td> <v-text-field label="score:" v-model="proScore" /> </td>
+                          <td> <v-text-field label="weight:" suffix="%" v-model="proWeight"/>  </td>
+                          <td> <v-text-field label="subtotal:" v-model="proSubtotal" /> </td>
+                        </tr>
+                        <tr>
+                          <td> 語法 </td>
+                          <td> <v-text-field label="score:" v-model="graScore" /> </td>
+                          <td> <v-text-field label="weight:" suffix="%" v-model="graWeight" />  </td>
+                          <td> <v-text-field label="subtotal:" v-model="graSubtotal" /> </td>
+                        </tr>
+                      </tbody>
+                    </v-simple-table>
+                    <v-card-actions> <v-spacer />
+                      <v-card-title> Total: {{scoreTotal}} </v-card-title></v-card-actions>
+                  </v-card>
+
             </v-col>
             <v-col cols="4">
               <div id="results" v-if="char=='simp'">
@@ -226,6 +267,7 @@
 
 <script>
 import { getUserFromCookie, shuffle } from '@/helper'
+// import * as dayjs from 'dayjs'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firebase-storage'
@@ -237,6 +279,17 @@ import OpenCC from 'opencc-js'
 
   export default {
     data: () => ({
+      toneWeight: 50,
+      toneScore: 0,
+      toneSubtotal: 0,
+      graWeight: 25,
+      graScore: 100,
+      graSubtotal: 0,
+      proWeight: 25,
+      proScore: 0,
+      proSubtotal: 0,
+      scoreTotal: 0,
+      charArray: [],
       audio: null,
       path: '',
       mediaRecorder: null,
@@ -281,15 +334,17 @@ import OpenCC from 'opencc-js'
       //comboLang: [{ language: 'Chinese', lang: 'cmn-Hans-CN' }, { language: 'English', lang: 'en-US' }, { language: 'Japanese', lang: 'ja-JP' }, { language: 'Korean', lang: 'ko-KR' }, { language: 'Italian', lang: 'it-IT' }, { language: 'French', lang: 'fr-FR' }, { language: 'Spanish', lang: 'es-MX' }],
     }),
     computed: {
-        user () {
-            return this.$store.getters['getUser'];
-        },
-        enrolled() {
-            return this.$store.getters['getEnrolled'];
-        }
+      user () {
+        return this.$store.getters['getUser'];
+      },
+      enrolled() {
+        return this.$store.getters['getEnrolled'];
+      },
+      dayjs() {
+        return require('dayjs');
+      }
     },
     mounted() {
-
     if (!window.webkitSpeechRecognition) {
         alert('Please use Chrome browser for best compatibility')
       } else {
@@ -369,7 +424,6 @@ import OpenCC from 'opencc-js'
         if (this.curQuizNum==this.quizQues.length-1) {
           // stop time & calculate
           //this.endTime = ((Date.now() - this.startTime)/1000).toFixed(1)
-          
         } else {
           this.curQuizNum += 1
           //console.log(this.curQuizNum)
@@ -378,7 +432,7 @@ import OpenCC from 'opencc-js'
         }
       },
       playAudio(path) {
-        //console.log( path )
+        // console.log( path )
         if (this.audio) this.audio.pause()
 
         if (path) {
@@ -450,7 +504,6 @@ import OpenCC from 'opencc-js'
         }).catch(error =>{ console.log(error.message)})
       },
       selectUnit () {
-        // console.log(this.comboUnitSelected)
         // get submitted speeches
         this.mySpeech = []
         this.$fireStore.collection('speech').where('unitid', '==', this.comboUnitSelected.unitid)
@@ -474,6 +527,34 @@ import OpenCC from 'opencc-js'
               }
             })
           })
+        console.log(this.mySpeech)
+        this.checkOralexam()
+      },
+      checkOralexam(){
+        // console.log(this.comboUnitSelected)
+        // console.log(this.user)
+        this.$fireStore.collection('oralexam_inunits').doc(this.comboUnitSelected.unitid+'_'+this.user.email).get().then(res => {
+          // console.log(res)
+          if (res.exists) {
+            // console.log(res.data())
+            this.charArray = res.data().charArray
+            this.graScore = res.data().graScore
+            this.graSubtotal = res.data().graSubtotal
+            this.graWeight = res.data().graWeight
+
+            this.proScore = res.data().proScore
+            this.proSubtotal = res.data().proSubtotal
+            this.proWeight = res.data().proWeight
+
+            this.toneScore = res.data().toneScore
+            this.toneSubtotal = res.data().toneSubtotal
+            this.toneWeight = res.data().toneWeight
+
+            this.scoreTotal = res.data().scoreTotal
+          } else {
+            this.charArray = []
+          }
+        })
       },
       selectLesson () {
         //console.log(this.comboLessonSelected)
@@ -653,6 +734,10 @@ import OpenCC from 'opencc-js'
 
 </script>
 <style>
+  .char.v-btn.v-size--default {
+      font-size: 3rem;
+      font-family: SimSun;
+  }
   #results, #results_trad {
     font-family: serif;
     font-size: 18px;

@@ -88,9 +88,27 @@
         </tbody>
     </v-simple-table>
     </div>
-    <div v-else> <!-- Performance -->
+    <v-card> <!-- Performance -->
+    <v-simple-table >
+        <thead>
+        <tr>
+            <th class="blue--text">@ {{ curPerQuiz }} </th>
+            <th class="blue--text">%</th>
+            <th class="blue--text">Duration</th>
+            <th class="blue--text">Time</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(item,i) in perArray" :key="i" name @click="showDetail(item)" >
+            <td> {{ item.email }} </td>
+            <td> <span :class="item.percentage=='100.0' ? 'pink--text' : ''"> {{ item.percentage }} </span> </td>
+            <td> <span> {{ item.duration }} </span></td>
+            <td> {{ dayjs.unix(item.time.seconds).format('h:mm:ss A • M/D/YYYY') }} </td>
+        </tr>
+        </tbody>
+    </v-simple-table>
 
-    </div>
+    </v-card>
 </v-col>
 </v-row>
 </v-container> 
@@ -118,8 +136,13 @@ export default {
       quizQues: [],
       char: '',
       eng: '',
+      perArray: [],
+      curPerQuiz: '',
     }),
     methods: {
+      showDetail(item) {
+        console.log(item)
+      },
       saveQuiz(){
         console.log(this.quizQues, this.currentEditid)
         this.$fireStore.collection('vocab_units').doc(this.currentEditid).update({que: this.quizQues})
@@ -143,7 +166,17 @@ export default {
 
       },
       perQuiz(item){
-
+        console.log(item)
+        this.curPerQuiz = item.unit
+        this.perArray = []
+        this.$fireStore.collection('vocab_quiz_stats').where('unitid', '==', item.id).orderBy('email').get().then(res => {
+          console.log(res)
+          if (res.size>0) {
+            res.forEach(item => {
+              this.perArray.push({ ...item.data() })
+            })
+          }
+        })
       },
       getQuiz(classid){
         this.quizzes = []
@@ -186,9 +219,12 @@ export default {
         this.init()
     },
     computed: {
-        user () {
-            return this.$store.getters['getUser'];
-        }
+      user () {
+          return this.$store.getters['getUser'];
+      },
+      dayjs() {
+        return require('dayjs');
+      }
     },
     asyncData({req, redirect}) {
         //console.log(firebase.auth())

@@ -17,6 +17,7 @@ export const state = () => ({
 export const mutations = {
   setUser: (state, user) => {
     state.user = user
+    // console.log(user)
   },
   setEnrolled: (state, enrolled) => {
     state.enrolled = enrolled

@@ -12,7 +12,7 @@
         </v-col>
       </v-row>
       <v-row>
-        <span v-for="(item, i) in updateArray"> <v-btn text large @click="showResult(item)"> {{item.exam}} </v-btn> </span>
+        <span v-for="(item, i) in updateArray" :key="i"> <v-btn text large @click="showResult(item)"> {{item.exam}} </v-btn> </span>
       </v-row>
       <v-row>
         <v-col cols="6">
@@ -200,8 +200,8 @@ export default {
       })
       this.tonePercent = toneCorrect/totalChar
       this.proPercent = proCorrect/totalChar
-      console.log('shengdiao:', toneCorrect/totalChar)
-      console.log('fayin:', proCorrect/totalChar)
+      // console.log('shengdiao:', toneCorrect/totalChar)
+      // console.log('fayin:', proCorrect/totalChar)
     },
     parseInput(){
       //let temp = this.tainput.split('\n').join('').split(' ')
